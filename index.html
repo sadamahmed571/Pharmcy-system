@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>صيدلية يمن - Hadhfadhf</title>
+    <link rel="stylesheet" href="css/style.css">
+<style>
+   
+    
+</style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="img/logo.jpg" alt="Logo" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-blue);" onerror="this.style.display='none'">
+            <h1 style="margin: 0; display: flex; align-items: center; font-size: 1.2rem;"> صيدلية يمان</h1>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; background: var(--button); padding: 5px 12px; border-radius: 20px; cursor: pointer; border: 1px solid var(--border-dim);">
+            <span style="font-size: 0.9rem; font-weight: bold;">حذفذف</span>
+            <i data-lucide="user" style="margin-left: 0;"></i>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('sales', this)"><i data-lucide="shopping-cart"></i> المبيعات</div>
+        <div class="tab" onclick="switchTab('inventory', this)"><i data-lucide="layers"></i> الرفوف</div>
+        <div class="tab" onclick="switchTab('ar', this)"><i data-lucide="scan-line"></i> AR</div>
+        <div class="tab" onclick="switchTab('recent', this)"><i data-lucide="history"></i> السجل</div>
+        <div class="tab" onclick="window.location.href = 'admin.html';"><i data-lucide="settings"></i> الادارة</div>
+    </div>
+
+    <div id="sales" class="view active">
+        <div class="ai-bubble" id="aiBubble">
+            <strong><i data-lucide="sparkles"></i> لمحة AI :</strong>
+            <span id="aiText"></span>
+        </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px; position: relative;">
+            <div class="search-box" style="width: 70%; ">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="drugSearch" placeholder="ابحث عن دواء (مثال: Amoxicillin)..." oninput="handleSearch()" onfocus="showDropdown()">
+                <div id="searchDropdown" class="dropdown-list"></div>
+            </div>
+            <button style="margin-bottom: 10px;
+        margin-top: 15px;    width: 30%; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--button); color: var(--text-light); border: 1px solid var(--border-dim); border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.8rem;" onclick="openScanner()">
+                <i data-lucide="scan-barcode" style="width: 16px; height: 16px; color: var(--accent-blue); margin: 0;"></i> باركود
+            </button>
+        </div>
+
+        <div class="qty-presets">
+            <button class="active"><i data-lucide="package"></i> باكت</button>
+            <button><i data-lucide="tablets"></i> علبة</button>
+            <button><i data-lucide="pill"></i> شريط</button>
+            <button><i data-lucide="syringe"></i> حقنة</button>
+            <button id="customUnitBtn" onclick="enableCustomUnit()"><i data-lucide="pen-tool"></i> مخصص</button>
+            <input type="text" id="customUnitInput" style="display: none; flex: 1; min-width: 0; padding: 8px; font-size: 0.8rem; color: var(--text-light); background: var(--bg-card); border: 1px solid var(--accent-blue); border-radius: 6px; text-align: center; outline: none; margin: 0;" placeholder="إدخال..." onblur="disableCustomUnit(this)">
+        </div>
+
+        <div class="qty-input-group">
+            <button class="qty-btn" onclick="updateQty(1)">+</button>
+            <input type="number" id="qtyInput" value="1" min="1">
+            <button class="qty-btn" onclick="updateQty(-1)">-</button>
+        </div>
+
+        <div class="price-row">
+            <div class="price-box">
+                <label>سعر الوحدة</label>
+                <span id="unitPrice">$0.00</span>
+            </div>
+            <div class="price-box">
+                <label>اجمالي المنتج</label>
+                <span id="totalPrice">$0.00</span>
+            </div>
+        </div>
+
+        <button class="btn-add" onclick="addProduct()"><i data-lucide="plus-circle"></i> إضافة منتج آخر</button>
+
+        <div class="receipt">
+            <div class="receipt-header">
+                <div><span>رقم العملية: <strong id="opNum" style="font-family: monospace">OP-8821</strong></span> <span>فاتورة: <strong id="invNum" style="font-family: monospace">INV-091</strong></span></div>
+                <div><span id="dateTime"></span> <span>المستلم : حذفذف</span></div>
+            </div>
+            <table class="receipt-table" id="receiptTable">
+                <tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr>
+            </table>
+            <div class="receipt-total">
+                <span>الإجمالي الكلي:</span>
+                <span id="grandTotal">$0.00</span>
+            </div>
+            <div class="receipt-footer">
+                <div><strong><i data-lucide="store"></i> صيدلية يمان</strong></div>
+                <div style="direction: ltr; display: flex; align-items: center; justify-content: center; gap: 5px;"> +967 770249300 <i data-lucide="phone" style="width:14px; height:14px; margin:0;"></i></div>
+            </div> 
+            <div class="receipt-footer-p"><i data-lucide="smile"></i> عافية بإذن الله</div> 			
+        </div>
+        
+        <button class="btn-print" onclick="printReceipt()"><i data-lucide="printer"></i> إصدار / طباعة الفاتورة</button>
+    </div>
+
+    <div id="inventory" class="view">
+        <div style="font-size: 0.8rem; text-align:center; color: var(--text-muted); margin-bottom: 10px;">
+            <i data-lucide="info" style="width: 14px; height: 14px;"></i> اسحب لليمين/اليسار لتصفح الجدران. اضغط على أي خلية لعرض الأدوية.
+        </div>
+        <div class="scene">
+            <div class="walls-container" id="wallsContainer"></div>
+        </div>
+    </div>
+
+    <div id="ar" class="view">
+        <h3 style="margin-bottom: 10px; color: var(--accent-blue); display: flex; align-items: center;"><i data-lucide="scan-face"></i> مستكشف الكاميرا المعزز</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+            محاكاة استخدام الكاميرا للتعرف على المخزون بشكل مكاني فوق الرفوف الحقيقية.
+        </p>
+        <button class="btn-add" onclick="document.getElementById('arMockup').style.display='block'"><i data-lucide="camera"></i> تشغيل SkyView</button>
+        
+        <div class="ar-container" id="arMockup" style="display: none;">
+            <div class="ar-grid"></div>
+            <div class="ar-label" style="top: 20%; left: 10%;">Panadol: 45 Box</div>
+            <div class="ar-label" style="top: 50%; left: 60%;">Augmentin: 12 Box</div>
+            <div class="ar-label" style="top: 75%; left: 30%;">Vitamin C: 88 Units</div>
+            <div class="ar-label" style="top: 35%; left: 80%; border-color: var(--danger-dim); color: #ff9999;">Aspirin: LOW (2)</div>
+        </div>
+    </div>
+
+    <div id="recent" class="view">
+        <h3 style="margin-bottom: 15px;"><i data-lucide="clipboard-list"></i> مبيعات اليوم</h3>
+        <div class="recent-item">
+            <div><span>INV-090</span><br><small>10:45 ص • 3 عناصر</small></div>
+            <div style="font-weight: bold; color: var(--accent-yellow);">$45.50</div>
+        </div>
+        <div class="recent-item">
+            <div><span>INV-089</span><br><small>10:12 ص • عنصر واحد</small></div>
+            <div style="font-weight: bold; color: var(--accent-yellow);">$12.00</div>
+        </div>
+    </div>
+
+</div>
+
+<script src="assets/lucide.min.js"></script>
+
+<script>
+    // تفعيل أيقونات Lucide
+    if(typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
+    function switchTab(tabId, element) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        element.classList.add('active');
+    }
+
+    const db = {
+        'Amoxicillin 500mg': { price: 15.50, desc: "مضاد حيوي واسع المجال يستخدم لعلاج الالتهابات البكتيرية." },
+        'Panadol Advance': { price: 5.00, desc: "مسكن للألم وخافض للحرارة الخفيفة والمتوسطة." },
+        'Ibuprofen 400mg': { price: 8.25, desc: "مضاد للالتهابات ومسكن لآلام المفاصل والعضلات." },
+        'Nexium 40mg': { price: 22.00, desc: "يقلل من حموضة المعدة ويستخدم لعلاج الارتجاع المريئي." },
+        'Aspirin Protect': { price: 4.50, desc: "مميع للدم يستخدم للوقاية من التجلطات الدموية." },
+        'Vitamin C 1000mg': { price: 6.00, desc: "مكمل غذائي لتعزيز المناعة." }
+    };
+
+    let currentItemPrice = 0;
+    let grandTotal = 0;
+    let invCounter = 92;
+    const drugNames = Object.keys(db);
+
+    const searchInput = document.getElementById('drugSearch');
+    const dropdown = document.getElementById('searchDropdown');
+
+    function showDropdown() {
+        dropdown.innerHTML = '';
+        drugNames.forEach(name => {
+            let div = document.createElement('div');
+            div.className = 'dropdown-item';
+            div.innerHTML = `<strong>${name}</strong> <span>$${db[name].price.toFixed(2)}</span>`;
+            div.onclick = () => selectDrug(name);
+            dropdown.appendChild(div);
+        });
+        dropdown.style.display = 'block';
+    }
+
+    function selectDrug(name) {
+        searchInput.value = name;
+        dropdown.style.display = 'none';
+        handleSearch();
+    }
+
+    function handleSearch() {
+        const query = searchInput.value;
+        const bubble = document.getElementById('aiBubble');
+        const aiText = document.getElementById('aiText');
+        
+        if (db[query]) {
+            currentItemPrice = db[query].price;
+            document.getElementById('unitPrice').innerText = `$${currentItemPrice.toFixed(2)}`;
+            updateTotal();
+            aiText.innerText = db[query].desc;
+            bubble.style.display = 'block';
+        } else {
+            bubble.style.display = 'none';
+            currentItemPrice = 0;
+            document.getElementById('unitPrice').innerText = `$0.00`;
+            document.getElementById('totalPrice').innerText = `$0.00`;
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        if(e.target !== searchInput && e.target !== dropdown) { dropdown.style.display = 'none'; }
+    });
+
+    function updateQty(change) {
+        let input = document.getElementById('qtyInput');
+        let val = parseInt(input.value) + change;
+        if(val >= 1) { input.value = val; updateTotal(); }
+    }
+
+    function updateTotal() {
+        let qty = parseInt(document.getElementById('qtyInput').value);
+        let total = qty * currentItemPrice;
+        document.getElementById('totalPrice').innerText = `$${total.toFixed(2)}`;
+    }
+
+    function addProductToTable(name, qty, price) {
+        let subtotal = qty * price;
+        grandTotal += subtotal;
+
+        let table = document.getElementById('receiptTable');
+        let row = table.insertRow();
+        row.innerHTML = `<td>${name}</td><td>${qty}</td><td>$${price.toFixed(2)}</td><td>$${subtotal.toFixed(2)}</td>`;
+        
+        document.getElementById('grandTotal').innerText = `$${grandTotal.toFixed(2)}`;
+    }
+
+    function addProduct() {
+        let name = searchInput.value;
+        let qty = parseInt(document.getElementById('qtyInput').value);
+        if (currentItemPrice === 0) return alert("الرجاء البحث واختيار دواء صحيح أولاً.");
+
+        addProductToTable(name, qty, currentItemPrice);
+        
+        searchInput.value = '';
+        document.getElementById('qtyInput').value = '1';
+        handleSearch();
+        
+        document.getElementById('invNum').innerText = `INV-${invCounter.toString().padStart(3, '0')}`;
+        invCounter++;
+    }
+
+    window.onload = () => {
+        addProductToTable('Panadol Advance', 2, db['Panadol Advance'].price);
+        addProductToTable('Vitamin C 1000mg', 1, db['Vitamin C 1000mg'].price);
+        
+        // إذا كانت الشاشة أكبر من 768، نقوم بتفعيل تبويب "الرفوف" ليكون المعروض افتراضياً في النصف الأيسر 
+        // نظراً لأن المبيعات ستكون معروضة بشكل دائم في النصف الأيمن.
+        if(window.innerWidth >= 768) {
+            switchTab('inventory', document.querySelectorAll('.tab')[1]);
+        }
+    }
+
+    setInterval(() => {
+        let now = new Date();
+        document.getElementById('dateTime').innerText = now.toLocaleString('ar-YE', {hour: '2-digit', minute:'2-digit', month:'short', day:'numeric'});
+    }, 1000);
+
+    document.querySelectorAll('.qty-presets button').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (this.id === 'customUnitBtn') return; // Custom button has its own logic
+            document.querySelectorAll('.qty-presets button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Revert custom button text if clicking a preset
+            const customBtn = document.getElementById('customUnitBtn');
+            if (customBtn) {
+                customBtn.innerHTML = `<i data-lucide="pen-tool" style="margin-left: 4px; width: 15px; height: 15px;"></i> مخصص`;
+                lucide.createIcons();
+            }
+        });
+    });
+
+    function enableCustomUnit() {
+        const btn = document.getElementById('customUnitBtn');
+        const input = document.getElementById('customUnitInput');
+        document.querySelectorAll('.qty-presets button').forEach(b => b.classList.remove('active'));
+        btn.style.display = 'none';
+        input.style.display = 'block';
+        input.focus();
+    }
+
+    function disableCustomUnit(input) {
+        const btn = document.getElementById('customUnitBtn');
+        if(input.value.trim() !== '') {
+            btn.innerHTML = `<i data-lucide="check-circle" style="margin-left: 4px; width: 15px; height: 15px;"></i> ${input.value}`;
+            btn.classList.add('active');
+        } else {
+            btn.innerHTML = `<i data-lucide="pen-tool" style="margin-left: 4px; width: 15px; height: 15px;"></i> مخصص`;
+        }
+        input.style.display = 'none';
+        btn.style.display = 'flex';
+        lucide.createIcons();
+    }
+
+    function openScanner() {
+        alert("فتح الكاميرا وماسح الباركود...");
+    }
+
+    function printReceipt() {
+        const receiptContent = document.querySelector('.receipt').innerHTML;
+        const printWindow = window.open('', '_blank', 'width=400,height=600');
+        printWindow.document.write(`
+            <html dir="rtl">
+                <head>
+                    <title>طباعة الفاتورة</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #000; background: #fff; text-align: center; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.9rem; }
+                        th, td { border-bottom: 1px dashed #000; padding: 8px 5px; text-align: center; }
+                        .receipt-total { font-weight: bold; border-top: 2px dashed #000; padding-top: 10px; margin-top: 10px; display: flex; justify-content: space-between; font-size: 1.1rem; }
+                        .receipt-header { border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px; text-align: right; font-size: 0.8rem; }
+                        .receipt-header div { display: flex; justify-content: space-between; margin-bottom: 5px; }
+                        .receipt-footer { margin-top: 20px; border-top: 2px dashed #000; padding-top: 10px; font-size: 0.9rem; }
+                        .receipt-footer-p { margin-top: 10px; font-weight: bold; }
+                        .lucide { display: none; } /* Hide icons in print */
+                    </style>
+                </head>
+                <body>
+                    <h2 style="margin-bottom: 20px;">صيدلية يمان</h2>
+                    ${receiptContent}
+                    <script>
+                        window.onload = function() { window.print(); window.close(); }
+                    <\/script>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+
+    // إنشاء جدران المخزون ثلاثي الأبعاد
+    const wallsContainer = document.getElementById('wallsContainer');
+    const randomDrugsList = ['Amoxil', 'Panadol', 'Voltaren', 'Nexium', 'Lipitor', 'Zyrtec', 'Aspirin', 'Metformin', 'Concor', 'Lasix'];
+    
+    for(let w=1; w<=3; w++) {
+        let wall = document.createElement('div');
+        wall.className = 'wall';
+        
+        for(let r=1; r<=15; r++) {
+            for(let c=1; c<=20; c++) {
+                let shelf = document.createElement('div');
+                shelf.className = 'shelf-cell';
+                
+                let randStatus = Math.random();
+                let statusClass = '';
+                let highlightClass = '';
+                
+                if (randStatus > 0.95) { 
+                    statusClass = 'status-low';
+                    highlightClass = 'highlight-low';
+                } else if (randStatus > 0.90) { 
+                    statusClass = 'status-expiry';
+                    highlightClass = 'highlight-expiry';
+                }
+                
+                if(statusClass) shelf.classList.add(statusClass);
+
+                shelf.innerHTML = `<span class="cell-coord">ج${w}</span>`;
+                
+                let popup = document.createElement('div');
+                popup.className = 'cell-popup';
+                
+                let numItems = Math.floor(Math.random() * 3) + 3;
+                let popupHTML = `<div class="popup-header">الإحداثيات: جدار ${w} - صف ${r} - عمود ${c}</div>`;
+                
+                for(let i=0; i<numItems; i++) {
+                    let dName = randomDrugsList[Math.floor(Math.random() * randomDrugsList.length)];
+                    let dQty = Math.floor(Math.random() * 40) + 1;
+                    
+                    let lineClass = (statusClass && i === 0) ? highlightClass : '';
+                    if (highlightClass == 'highlight-low') dQty = Math.floor(Math.random() * 3) + 1;
+                    
+                    popupHTML += `<div class="drug-line ${lineClass}"><span>${dName}</span> <span class="drug-Qty">${dQty}</span></div>`;
+                }
+                popup.innerHTML = popupHTML;
+                shelf.appendChild(popup);
+                
+                shelf.onclick = function(e) {
+                    document.querySelectorAll('.shelf-cell.zoomed').forEach(s => {
+                        if(s !== this) s.classList.remove('zoomed');
+                    });
+                    this.classList.toggle('zoomed');
+                    e.stopPropagation();
+                };
+                
+                wall.appendChild(shelf);
+            }
+        }
+        wallsContainer.appendChild(wall);
+    }
+
+    document.getElementById('inventory').addEventListener('click', () => {
+        document.querySelectorAll('.shelf-cell.zoomed').forEach(s => s.classList.remove('zoomed'));
+    });
+
+</script>
+</body>
+</html>
